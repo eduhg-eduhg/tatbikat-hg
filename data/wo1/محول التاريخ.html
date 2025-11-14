@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>محول التاريخ الهجري والميلادي</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .exit-button {
+            position: absolute;
+            top: 5px;
+            left:200px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .exit-button img {
+            width: 60px;
+            height: 60px;
+            transition: transform 0.2s;
+        }
+        .exit-button img:hover {
+            transform: scale(1.1);
+        }
+        input, select, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h1-img {
+            width: 170px;
+            height: 30px;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .optional {
+            color: #020202;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="exit-button" onclick="window.close()">
+            <img src="data/1.png">
+        </button>
+        <h1><img src="data/2.png"></h1>
+        <select id="conversionType">
+            <option value="hijriToGregorian">من التقويم الهجري إلى الميلادي</option>
+            <option value="gregorianToHijri">من التقويم الميلادي إلى الهجري</option>
+        </select>
+
+        <div id="hijriInputs">
+            <input type="number" id="hijriYear" placeholder="السنة الهجرية *" min="1" max="1500" required>
+            <select id="hijriMonth">
+                <option value="">اختر الشهر الهجري (اختياري)</option>
+                <option value="1">محرم</option>
+                <option value="2">صفر</option>
+                <option value="3">ربيع الأول</option>
+                <option value="4">ربيع الثاني</option>
+                <option value="5">جمادى الأولى</option>
+                <option value="6">جمادى الآخرة</option>
+                <option value="7">رجب</option>
+                <option value="8">شعبان</option>
+                <option value="9">رمضان</option>
+                <option value="10">شوال</option>
+                <option value="11">ذو القعدة</option>
+                <option value="12">ذو الحجة</option>
+            </select>
+            <input type="number" id="hijriDay" placeholder="اليوم الهجري (اختياري)" min="1" max="30">
+        </div>
+
+        <div id="gregorianInputs" style="display:none;">
+            <input type="number" id="gregorianYear" placeholder="السنة الميلادية *" min="1900" max="2100" required>
+            <select id="gregorianMonth">
+                <option value="">اختر الشهر الميلادي (اختياري)</option>
+                <option value="1">يناير</option>
+                <option value="2">فبراير</option>
+                <option value="3">مارس</option>
+                <option value="4">أبريل</option>
+                <option value="5">مايو</option>
+                <option value="6">يونيو</option>
+                <option value="7">يوليو</option>
+                <option value="8">أغسطس</option>
+                <option value="9">سبتمبر</option>
+                <option value="10">أكتوبر</option>
+                <option value="11">نوفمبر</option>
+                <option value="12">ديسمبر</option>
+            </select>
+            <input type="number" id="gregorianDay" placeholder="اليوم الميلادي (اختياري)" min="1" max="31">
+        </div>
+
+        <button onclick="convertDate()">تحويل</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // تحديد نوع التحويل
+        document.getElementById('conversionType').addEventListener('change', function() {
+            const hijriInputs = document.getElementById('hijriInputs');
+            const gregorianInputs = document.getElementById('gregorianInputs');
+            
+            if (this.value === 'hijriToGregorian') {
+                hijriInputs.style.display = 'block';
+                gregorianInputs.style.display = 'none';
+            } else {
+                hijriInputs.style.display = 'none';
+                gregorianInputs.style.display = 'block';
+            }
+        });
+
+        function convertDate() {
+            const conversionType = document.getElementById('conversionType').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                if (conversionType === 'hijriToGregorian') {
+                    const hijriYear = parseInt(document.getElementById('hijriYear').value);
+                    const hijriMonth = document.getElementById('hijriMonth').value ? parseInt(document.getElementById('hijriMonth').value) : null;
+                    const hijriDay = document.getElementById('hijriDay').value ? parseInt(document.getElementById('hijriDay').value) : null;
+
+                    const gregorianDate = hijriToGregorian(hijriYear, hijriMonth, hijriDay);
+                    resultDiv.innerHTML = formatDate(gregorianDate, true);
+                } else {
+                    const gregorianYear = parseInt(document.getElementById('gregorianYear').value);
+                    const gregorianMonth = document.getElementById('gregorianMonth').value ? parseInt(document.getElementById('gregorianMonth').value) : null;
+                    const gregorianDay = document.getElementById('gregorianDay').value ? parseInt(document.getElementById('gregorianDay').value) : null;
+
+                    const hijriDate = gregorianToHijri(gregorianYear, gregorianMonth, gregorianDay);
+                    resultDiv.innerHTML = formatDate(hijriDate, false);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = 'خطأ في إدخال التاريخ. يرجى التأكد من صحة التواريخ.';
+            }
+        }
+
+        function formatDate(date, isGregorian) {
+            const monthNames = isGregorian 
+                ? ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
+                : ['محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني', 'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'];
+
+            let formattedDate = `السنة: ${date.year}`;
+            if (date.month) {
+                formattedDate += ` - الشهر: ${monthNames[date.month - 1]}`;
+            }
+            if (date.day) {
+                formattedDate += ` - اليوم: ${date.day}`;
+            }
+
+            return formattedDate;
+        }
+
+        function hijriToGregorian(hijriYear, hijriMonth, hijriDay) {
+            const baseDate = new Date(Date.UTC(hijriYear + 622, hijriMonth ? hijriMonth - 1 : 0, hijriDay || 1));
+            const gregorianDate = new Intl.DateTimeFormat('en-US').formatToParts(baseDate);
+            
+            return {
+                year: parseInt(gregorianDate.find(x => x.type === 'year').value),
+                month: hijriMonth ? parseInt(gregorianDate.find(x => x.type === 'month').value) : null,
+                day: hijriDay ? parseInt(gregorianDate.find(x => x.type === 'day').value) : null
+            };
+        }
+
+        function gregorianToHijri(gregorianYear, gregorianMonth, gregorianDay) {
+            const baseDate = new Date(Date.UTC(gregorianYear, gregorianMonth ? gregorianMonth - 1 : 0, gregorianDay || 1));
+            const islamicDate = new Intl.DateTimeFormat('en-u-ca-islamic', {
+                year: 'numeric', 
+                month: 'numeric', 
+                day: 'numeric'
+            }).formatToParts(baseDate);
+            
+            return {
+                year: parseInt(islamicDate.find(x => x.type === 'year').value),
+                month: gregorianMonth ? parseInt(islamicDate.find(x => x.type === 'month').value) : null,
+                day: gregorianDay ? parseInt(islamicDate.find(x => x.type === 'day').value) : null
+            };
+        }
+    </script>
+</body>
+</html>
